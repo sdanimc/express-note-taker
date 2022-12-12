@@ -7,6 +7,9 @@ const noteDB = require('../db/db.json');
 // second route POST /api/notes should receive a new note to save on the request body, add it to db.json, 
 //and return new note to client Each note need unique id when save (npm packages could do this)
 
+//currently notes in database render in left column at localhost/3000/notes but clicking does not render saved note in right section
+// localhost/3000/api/notes return api raw data
+//no saved notes render at localhost/3000/notes.html
 apiRouter.get('/notes', (req, res) => {
     fs.readFile(join(__dirname, '../db/db.json'), 'utf-8', (err, data) => {
         if (err) throw err;
@@ -18,14 +21,16 @@ apiRouter.post('/notes', (req, res) => {
     console.info(`${req.method} request recieved to add note`);
     const { title, text } = req.body;
     if (!title || !text) { throw new Error("Both note title and text fields must have content"); }
-    const newNote = {
-        title,
-        text,
-        //need to assign it an id
-    };
     fs.readFile(join(__dirname, '../db/db.json'), 'utf-8', (err, data) => {
         if (err) throw err;
         const notes = JSON.parse(data);
+        let lastID = notes.length.valueOf();
+        let newNoteID = lastID + 1 ;
+        const newNote = {
+            title,
+            text,
+            id: newNoteID 
+        };
         notes.push(newNote);
         console.log(notes);
         fs.writeFile(join(__dirname, '../db/db.json'),
