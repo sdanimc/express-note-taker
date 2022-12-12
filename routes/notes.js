@@ -1,15 +1,9 @@
 const apiRouter = require('express').Router();
 const fs = require('fs');
-//const path = require('path');
 const { join } = require('path');
 const noteDB = require('../db/db.json');
-//two API routes should be made: get /api/notes should read db.json and return all saved notes and JSOn
-// second route POST /api/notes should receive a new note to save on the request body, add it to db.json, 
-//and return new note to client Each note need unique id when save (npm packages could do this)
 
-//currently notes in database render in left column at localhost/3000/notes but clicking does not render saved note in right section
-// localhost/3000/api/notes return api raw data
-//no saved notes render at localhost/3000/notes.html
+//get /api/notes requests return save notes data from database
 apiRouter.get('/notes', (req, res) => {
     fs.readFile(join(__dirname, '../db/db.json'), 'utf-8', (err, data) => {
         if (err) throw err;
@@ -17,13 +11,16 @@ apiRouter.get('/notes', (req, res) => {
     })
 })
 
+//post api/notes requests add new note to database
 apiRouter.post('/notes', (req, res) => {
     console.info(`${req.method} request recieved to add note`);
     const { title, text } = req.body;
+    //returns error if either title or text fields are blank
     if (!title || !text) { throw new Error("Both note title and text fields must have content"); }
     fs.readFile(join(__dirname, '../db/db.json'), 'utf-8', (err, data) => {
         if (err) throw err;
         const notes = JSON.parse(data);
+        //gives new note unique id number based on database length
         let lastID = notes.length.valueOf();
         let newNoteID = lastID + 1 ;
         const newNote = {
@@ -31,8 +28,10 @@ apiRouter.post('/notes', (req, res) => {
             text,
             id: newNoteID 
         };
+        //adds new note to parsed database
         notes.push(newNote);
         console.log(notes);
+        //returns notes data now including new note back to db.json returns ok status
         fs.writeFile(join(__dirname, '../db/db.json'),
             JSON.stringify(notes),
             (err) => {
